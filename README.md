@@ -26,6 +26,8 @@ Para implementar el arranque de la maquina expendedora, como algo que solo se ti
 una vez, al iniciarse la placa, he decidido crear una funcion 'startup' y llamarla solo una vez
 en el setup.
 
+### Arduino Thread
+
 Para el control del led en el arranque, he decidido usar la librería thread. Esta libreria me permite 
 poder simular un thread que ejecute cada x timepo. He creado una clase LedThread, que me permite crear
 un "thread" para que el led pueda parpadear cada segundo.
@@ -122,6 +124,84 @@ El funcionamiento es el mismo que con la otra interrupcion.
   }
 ```
 
+## Menu
+
+Para el menu, he utilizado la libreria 'LiquidMenu'. Este menu, se compone por Lines y Screens.
+Con las Lines formas Screens, y las Screens, se añaden al menu para poder visualizarlo.
+
+Para poder editar el precio de los productos, he tenido que crear las lineas con una variable, 
+la cual es la que cambiaremos al modificar un precio.
+
+```c++
+  LiquidLine linea1_1(1, 0, "Cafe Solo ", cafes[0], "e");
+
+  LiquidScreen pantalla1(linea1_1, linea1_2, linea1_3, linea1_4, linea1_5);
+
+  LiquidMenu menu(lcd,pantalla1,pantalla2);
+```
+
+Para poder navegar por el menu, hay que setear el cursor de las linias.
+
+```c++
+  linea1_1.set_focusPosition(Position::LEFT);
+```
+
+Podemos vincular una a cada linea, la cual se ejecutara si pulsamos el boton del joystic con
+la linea selecionada.
+
+```c++
+  linea1_1.attach_function(1, prepare);
+  linea1_1.attach_function(2, modify_prices); 
+```
+
+Para seleccionar la linea, usamos menu.call_function(f), donde f es el numero de que hemos puesto
+en attach_function, asi podemos ejecutar mas de una funcion en cada linea cuando nos convenga. 
+
+
+Para cambiar el cursor e ir navegando en el menu, subes i bajas de linea con:
+
+```c++
+  menu.switch_focus(true);  // hacia abajo
+  menu.switch_focus(false); // hacia arriba
+```
+
+Para que se actualice el menu cuando vas navegadno por el, necesitas usar menu.update().
+
+
+Para poder utilizar esta libreria, he tenido que modificar los archivos de libreria, ya que, 
+por defecto, solo me dejaba añadir 4 lineas, y necesitaba 5. Por lo que mirando la libreria, 
+me di cuenta que solo habia definido el constructor de LiquidLine hasta con 4 linas, por lo 
+que añadi la definicion en LiquidMenu.h y el constructor en LiquidScreen.cpp.
+
+```c++
+  // en LiquidMenu.h
+  /// Constructor for 5 LiquidLine object.
+  /**
+  @param &liquidLine1 - pointer to a LiquidLine object
+  @param &liquidLine2 - pointer to a LiquidLine object
+  @param &liquidLine3 - pointer to a LiquidLine object
+  @param &liquidLine4 - pointer to a LiquidLine object
+  @param &liquidLine5 - pointer to a LiquidLine object
+  */
+  LiquidScreen(LiquidLine &liquidLine1, LiquidLine &liquidLine2,
+               LiquidLine &liquidLine3, LiquidLine &liquidLine4,
+               LiquidLine &liquidLine5);
+
+  ///@}
+
+
+  // en LiquidScreen.cpp
+  LiquidScreen::LiquidScreen(LiquidLine &liquidLine1, LiquidLine &liquidLine2,
+                            LiquidLine &liquidLine3, LiquidLine &liquidLine4, 
+                            LiquidLine &liquidLine5)
+    : LiquidScreen(liquidLine1, liquidLine2, liquidLine3, liquidLine4) {
+    add_line(liquidLine5);
+  }
+```
+
+He utilizado un pequeño delay de 25 ms al final del loop, para que el lcd se vea consistente
+sin temblar.
+
 
 ## Watchdog
 
@@ -134,3 +214,7 @@ expendora, no seria critico si se enganchara un momento.
 
 !["Esquema electronico"](esquema_p3.jpg)
 
+
+## Video Funcionamiento
+
+![ver_video](video_p3)

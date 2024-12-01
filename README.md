@@ -217,4 +217,4 @@ expendora, no seria critico si se enganchara un momento.
 
 ## Video Funcionamiento
 
-![ver_video](video_p3)
+![ver_video](video-p3_MgZPXVy8.mp4)
